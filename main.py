@@ -12,8 +12,8 @@ import gpt_process
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--model', type=str, default='medium', choices=['tiny', 'small', 'medium', 'large'],
                     help='choose the model to use for transcribing')
-parser.add_argument('--lang', type=str, default='all', choices=['all', 'eng', 'ru'],
-                    help='choose the language: eng for English; ru for Russian; all for other languages (default)')
+parser.add_argument('--lang', type=str, default='all', choices=['all', 'en', 'ru'],
+                    help='choose the language: en for English; ru for Russian; all for other languages (default)')
 parser.add_argument('--cuda', type=int, default=1, choices=[0, 1],
                     help='use CUDA/ROCm: 0 for CPU; 1 for GPU (default)')
 parser.add_argument('--sound_device', type=int, default=6,
@@ -25,8 +25,11 @@ parser.add_argument('--query_devices', type=str, default='false', choices=['true
                     help='pass true to query all sound devices available')
 parser.add_argument('--save_audio', type=str, default='true', choices=['true', 'false'],
                     help='pass false to automatically delete all .wav outputs; default - true')
-parser.add_argument('--timer', type=int, default=10, choices=[5, 8, 10, 15, 20],
-                    help='set the time of one audio chunk; default - 10')
+parser.add_argument('--timer', type=int, default=5, choices=[5, 8, 10, 15, 20],
+                    help='set the time of one audio chunk; default - 5')
+parser.add_argument('--provider', type=str, default='FakeGpt',
+                    choices=['FakeGpt', 'GeekGpt', 'Liaobots', 'Raycast'],
+                    help='set the GPT provider; default - FakeGpt')
 
 args = parser.parse_args()
 output_dir = f"voice_output/{datetime.today().strftime('%Y-%m-%d')}"
@@ -48,6 +51,7 @@ async def trasncribe_audio():
     global prev_msg, chunk_count
     result = model.transcribe(
         audio=f"{output_dir}/{chunk_count}.wav",
+        language='russian' if args.lang == 'ru' else None
     )
     chunk_count += 1
     if args.save_audio != 'true':
@@ -55,8 +59,11 @@ async def trasncribe_audio():
         os.remove(f"{output_dir}/{chunk_count}.wav")
 
     print("-" * 20 + f"\nYou said: {result['text']},\nLanguage detected: {result['language']}\n" + "-" * 20)
-    await gpt_process.call_main(result['text'], result['language'], prev_msg)
-    prev_msg = result['text']
+    if result['language'] != 'nn':
+        await gpt_process.call_main(result['text'], result['language'], prev_msg)
+        prev_msg = result['text']
+    else:
+        print("It is silent! Skipping chunk...")
 
 
 async def audio_rec(chunk_count):

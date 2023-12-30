@@ -5,14 +5,10 @@ g4f.debug.logging = False
 g4f.debug.version_check = False
 
 providers = [
-    g4f.Provider.GeekGpt,
-    g4f.Provider.ChatgptAi,
     g4f.Provider.FakeGpt,
-    g4f.Provider.FreeGpt,
-    g4f.Provider.ChatBase,
-    g4f.Provider.Liaobots,
 ]
 
+#todo: provider choice
 
 async def call_provider(
         provider: g4f.Provider.BaseProvider, message: str, lang: str, prev_msg: str, status: dict
@@ -31,7 +27,7 @@ async def call_provider(
             }],
             provider=provider,
             stream=False,
-            timeout=10,
+            timeout=5,
         )
 
         if len(response) > 1 and not status['received']:
