@@ -1,0 +1,7 @@
+g4f==0.1.9.7
+numpy==1.24.1
+openai_whisper==20231117
+scipy==1.11.4
+sounddevice==0.4.6
+torch==2.1.2
+#torch==2.3.0.dev20231229+rocm5.7 for rocm5.7 - latest
